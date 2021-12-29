@@ -1,16 +1,17 @@
 ;(() => {
+    var conn;
     // expectingMessage is set to true
     // if the user has just submitted a message
     // and so we should scroll the next message into view when received.
     let expectingMessage = false
     function dial() {
-      const conn = new WebSocket(`ws://${location.host}/chat`)
+      conn = new WebSocket(`ws://${location.host}/websocket`)
   
       conn.addEventListener("close", ev => {
         appendLog(`WebSocket Disconnected code: ${ev.code}, reason: ${ev.reason}`, true)
         if (ev.code !== 1001) {
-          appendLog("Reconnecting in 1s", true)
-          setTimeout(dial, 1000)
+          appendLog("Reconnecting in 10s", true)
+          setTimeout(dial, 10000)
         }
       })
       conn.addEventListener("open", ev => {
@@ -53,24 +54,30 @@
     // onsubmit publishes the message from the user when the form is submitted.
     publishForm.onsubmit = async ev => {
       ev.preventDefault()
-  
+
       const msg = messageInput.value
       if (msg === "") {
         return
       }
       messageInput.value = ""
-  
-      expectingMessage = true
-      try {
-        const resp = await fetch("/publish", {
-          method: "POST",
-          body: msg,
-        })
-        if (resp.status !== 202) {
-          throw new Error(`Unexpected HTTP Status ${resp.status} ${resp.statusText}`)
-        }
-      } catch (err) {
-        appendLog(`Publish failed: ${err.message}`, true)
-      }
+      
+      // send via websocket
+      console.log("onsubmit, Ready to send..")
+      // const payload = 
+      conn.send(JSON.stringify({"client_id": "1abc", "text": msg, "room_id": "room2"}));
+      //
+
+      // expectingMessage = true
+      // try {
+      //   const resp = await fetch("/publish", {
+      //     method: "POST",
+      //     body: msg,
+      //   })
+      //   if (resp.status !== 202) {
+      //     throw new Error(`Unexpected HTTP Status ${resp.status} ${resp.statusText}`)
+      //   }
+      // } catch (err) {
+      //   appendLog(`Publish failed: ${err.message}`, true)
+      // }
     }
   })()
