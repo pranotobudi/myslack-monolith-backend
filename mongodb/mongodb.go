@@ -111,8 +111,8 @@ func (m *MongoDB) DataSeeder() {
 	// }
 
 	users := []interface{}{
-		bson.D{{"email", "ocean.king.digital@gmail.com"}, {"username", "ocean.king.digital"}, {"user_image", "localhost"}, {"rooms", bson.A{"room1", "room2"}}},
-		bson.D{{"email", "lumion.design.studio@gmail.com"}, {"username", "lumion.design.studio"}, {"user_image", "localhost"}, {"rooms", bson.A{"room1", "room2"}}},
+		bson.D{{"email", "ocean.king.digital@gmail.com"}, {"username", "ocean.king.digital"}, {"user_image", "localhost"}, {"rooms", bson.A{roomIds[0], roomIds[1]}}},
+		bson.D{{"email", "lumion.design.studio@gmail.com"}, {"username", "lumion.design.studio"}, {"user_image", "localhost"}, {"rooms", bson.A{roomIds[0], roomIds[1]}}},
 	}
 	userIds, err := m.AddUsers(users)
 	if err != nil {
@@ -308,8 +308,8 @@ func (m *MongoDB) AddMessage(message interface{}) (string, error) {
 		log.Println("failed to insert message: ", err)
 		return "", err
 	}
-
-	return fmt.Sprintf("%v", result.InsertedID), nil
+	return result.InsertedID.(primitive.ObjectID).Hex(), nil
+	// return fmt.Sprintf("%v", result.InsertedID), nil
 }
 
 func (m *MongoDB) AddMessages(messages []interface{}) ([]string, error) {
@@ -374,7 +374,11 @@ func (m *MongoDB) GetUser(filter interface{}) (User, error) {
 	// filter := bson.D{}
 
 	var userMongo bson.M
-	coll.FindOne(context.TODO(), filter).Decode(&userMongo)
+	err := coll.FindOne(context.TODO(), filter).Decode(&userMongo)
+	if err != nil {
+		log.Println("inside GetUser, fail to decode: ", err)
+		return User{}, nil
+	}
 	log.Println("inside GetUser, userMongo: ", userMongo)
 
 	var user User

@@ -15,7 +15,7 @@ type Hub struct {
 
 	// broadcastMsg     chan []byte
 	// broadcastMsg chan ClientMsg
-	broadcastMsg chan mongodb.ClientMessage
+	broadcastMsg chan mongodb.Message
 	register     chan *client
 	unregister   chan *client
 }
@@ -34,7 +34,7 @@ func NewHub() *Hub {
 		register:     make(chan *client),
 		unregister:   make(chan *client),
 		// broadcastMsg: make(chan ClientMsg),
-		broadcastMsg: make(chan mongodb.ClientMessage),
+		broadcastMsg: make(chan mongodb.Message),
 	}
 }
 
@@ -47,19 +47,19 @@ func (h *Hub) Run() {
 	log.Println("inside Run")
 	for {
 		select {
-		case clientMsg := <-h.broadcastMsg:
-			log.Println("inside Run: new message, send to room participants, clientMsg:", clientMsg)
-			log.Println("total member: ", len(h.participants[clientMsg.RoomID]))
-			for _, client := range h.participants[clientMsg.RoomID] {
+		case msg := <-h.broadcastMsg:
+			log.Println("inside Run: new message, send to room participants, clientMsg:", msg)
+			log.Println("<- h.broadcastMsg total member: ", len(h.participants[msg.RoomID]))
+			for _, client := range h.participants[msg.RoomID] {
 				// if client.clientId != clientMsg.ClientId {
 				// open the comment for production
-				log.Println("inside Run - h.broadcasting, room: ", clientMsg.RoomID, " clientID: ", client.clientId)
+				log.Println("inside Run - h.broadcasting, room: ", msg.RoomID, " clientID: ", client.clientId)
 				select {
-				case client.send <- clientMsg:
+				case client.send <- msg:
 				default:
 					log.Println("inside Run- h.broadcastMsg default")
 					close(client.send)
-					delete(h.participants[clientMsg.RoomID], client.clientId)
+					delete(h.participants[msg.RoomID], client.clientId)
 				}
 				// }
 			}
@@ -110,6 +110,7 @@ func (h *Hub) Run() {
 func (h *Hub) registerClient(c *client) error {
 	userId := c.clientId
 	objID, err := primitive.ObjectIDFromHex(userId)
+	log.Println("func registerClient - objID: ", objID, " userID: ", userId)
 	if err != nil {
 		log.Println("convert string to objectID failed")
 		return err
@@ -128,7 +129,7 @@ func (h *Hub) registerClient(c *client) error {
 		if h.participants[room] == nil {
 			h.participants[room] = make(map[string]*client)
 		}
-		log.Println("--- before total member in: ", room, ": ", len(h.participants[room]))
+		log.Println("--- before total member in: ", room, ": ", len(h.participants[room]), "roomID: ")
 		// add client to map of map
 		h.participants[room][c.clientId] = c
 		log.Println("--- after total member in: ", room, ": ", len(h.participants[room]))

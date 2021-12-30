@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/pranotobudi/myslack-monolith-backend/mongodb"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type client struct {
@@ -37,7 +38,7 @@ type client struct {
 	// Buffered channel of outbound messages.
 	// send chan []byte
 	// send chan ClientMsg
-	send        chan mongodb.ClientMessage
+	send        chan mongodb.Message
 	mongodbConn *mongodb.MongoDB
 }
 
@@ -67,7 +68,7 @@ func NewClient(conn *websocket.Conn, hub *Hub, mongodbConn *mongodb.MongoDB) *cl
 
 		// Buffered channel of outbound messages.
 		// send: make(chan []byte, 256),
-		send:        make(chan mongodb.ClientMessage),
+		send:        make(chan mongodb.Message),
 		mongodbConn: mongodbConn,
 	}
 }
@@ -161,9 +162,31 @@ func (c *client) readPump() {
 			log.Println("inside readPump - normal Message, add message to MongoDB success, id: ", docId)
 			// TODO
 
+			// convert clientMessage to Message
+
+			// var messageWithId mongodb.Message
+			// messageWithId.ID = docId
+			// messageWithId.Message = clientMsg.Message
+			// messageWithId.RoomID = clientMsg.RoomID
+			// messageWithId.Timestamp = clientMsg.Timestamp
+			// messageWithId.UserID = clientMsg.UserID
+			// messageWithId.RoomID = clientMsg.RoomID
+			// messageWithId.UserImage = clientMsg.UserImage
+			// messageWithId.Username = clientMsg.Username
+
+			objID, err := primitive.ObjectIDFromHex(docId)
+			if err != nil {
+				log.Println(err)
+			}
+
+			filter := bson.M{"_id": objID}
+			messageWithId, err := c.mongodbConn.GetMessage(filter)
+			if err != nil {
+				log.Println("failed to getMessage: ", err)
+			}
 			// broadcast to other clients
-			c.hub.broadcastMsg <- clientMsg
-			log.Println("inside readPump - normal Message: ", clientMsg.Message)
+			c.hub.broadcastMsg <- messageWithId
+			log.Println("inside readPump - normal Message: ", messageWithId)
 		}
 		// _, message, err := c.conn.ReadMessage()
 		// message := clientMsg.Text
@@ -187,7 +210,7 @@ func (c *client) writePump() {
 	for {
 		select {
 		case clientMsg, ok := <-c.send:
-			log.Println("inside writePump.. <-c.send event, ok:", ok)
+			log.Println("inside writePump.. <-c.send event, ok:", ok, " clientMsg: ", clientMsg)
 			c.conn.SetWriteDeadline(time.Now().Add(c.writeWait))
 			if !ok {
 				// The hub closed the channel.
@@ -200,6 +223,7 @@ func (c *client) writePump() {
 				c.conn.Close()
 				return
 			}
+			log.Println("client.go - writePump - <-c.send: Success")
 			// w, err := c.conn.NextWriter(websocket.TextMessage)
 			// if err != nil {
 			// 	return
