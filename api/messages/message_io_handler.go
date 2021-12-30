@@ -13,8 +13,6 @@ import (
 
 func GetMessages(mongo *mongodb.MongoDB) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		// request: userId
-		// response: user snapshot to load main page
 		roomId, ok := c.GetQuery("room_id")
 		log.Println("GetMessages - roomId: ", roomId)
 		if !ok {
@@ -31,7 +29,7 @@ func GetMessages(mongo *mongodb.MongoDB) func(c *gin.Context) {
 		fmt.Println("inside room_io_handler-getMessages!: ", messages)
 		response := common.ResponseFormatter(http.StatusOK, "success", "get messages successfull", messages)
 		log.Println("RESPONSE TO BROWSER: ", response)
-		// Add CORS headers
+		// Add CORS headers, if no global CORS setting
 		// c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
 		// c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 

@@ -28,7 +28,7 @@ func GetUserByEmail(mongo *mongodb.MongoDB) func(c *gin.Context) {
 		fmt.Println("inside room_io_handler-getRoom GetUserByEmail!: ", user)
 		response := common.ResponseFormatter(http.StatusOK, "success", "get rooms successfull", user)
 		log.Println("RESPONSE TO BROWSER: ", response)
-		// Add CORS headers
+		// Add CORS headers, if no global CORS setting
 		// c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
 		// c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 

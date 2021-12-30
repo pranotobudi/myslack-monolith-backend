@@ -107,14 +107,6 @@ func InitWebsocket(hub *Hub, mongodbConn *mongodb.MongoDB) func(c *gin.Context) 
 	}
 }
 
-func (c *client) clientSendToServer() {
-	log.Println("clientSendToServer")
-}
-
-func (c *client) serverSendToClient() {
-	log.Println("serverSendToClient")
-}
-
 // readPump pumps messages from the websocket connection to the hub.
 //
 // The application runs readPump in a per-connection goroutine. The application
@@ -134,7 +126,6 @@ func (c *client) readPump() {
 		var clientMsg mongodb.ClientMessage
 		err := c.conn.ReadJSON(&clientMsg)
 		log.Println(fmt.Sprintf("clientMsg: %+v", clientMsg))
-		// log.Println("client: ", clientMsg, "id: ", clientMsg.ClientId, "text: ", clientMsg.Text, "roomID: ", clientMsg.RoomId)
 		log.Println("text: ", clientMsg.Message, "roomID: ", clientMsg.RoomID, " userID: ", clientMsg.UserID, "timestamp: ", clientMsg.Timestamp)
 		if err != nil {
 			log.Println("inside readPump - ERROR READJSON")
@@ -144,8 +135,8 @@ func (c *client) readPump() {
 			break
 		}
 
-		// special message - initial message for user info
 		if clientMsg.Message == "[USERINFO]" {
+			// special message - initial message for user info
 			c.clientId = clientMsg.UserID
 			log.Println("inside readPump - special Message: ", c.clientId)
 			log.Println("register client to hub (will load client snapshot to hub)...", c)
@@ -164,16 +155,6 @@ func (c *client) readPump() {
 
 			// convert clientMessage to Message
 
-			// var messageWithId mongodb.Message
-			// messageWithId.ID = docId
-			// messageWithId.Message = clientMsg.Message
-			// messageWithId.RoomID = clientMsg.RoomID
-			// messageWithId.Timestamp = clientMsg.Timestamp
-			// messageWithId.UserID = clientMsg.UserID
-			// messageWithId.RoomID = clientMsg.RoomID
-			// messageWithId.UserImage = clientMsg.UserImage
-			// messageWithId.Username = clientMsg.Username
-
 			objID, err := primitive.ObjectIDFromHex(docId)
 			if err != nil {
 				log.Println(err)
@@ -184,6 +165,7 @@ func (c *client) readPump() {
 			if err != nil {
 				log.Println("failed to getMessage: ", err)
 			}
+
 			// broadcast to other clients
 			c.hub.broadcastMsg <- messageWithId
 			log.Println("inside readPump - normal Message: ", messageWithId)

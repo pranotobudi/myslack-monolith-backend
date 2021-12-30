@@ -34,13 +34,3 @@ func ResponseErrorFormatter(err error) Response {
 	response := ResponseFormatter(http.StatusBadRequest, "error", "invalid request", err.Error())
 	return response
 }
-
-// func ErrorFormatter(err error) []string {
-// 	var errors []string
-
-// 	// for _, e := range err.(validator.ValidationErrors) {
-// 	// 	errors = append(errors, e.Error())
-// 	// }
-// 	errors = append(errors, err.Error())
-// 	return errors
-// }

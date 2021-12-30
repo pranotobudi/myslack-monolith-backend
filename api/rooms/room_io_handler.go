@@ -14,8 +14,6 @@ import (
 
 func GetRooms(mongo *mongodb.MongoDB) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		// request: userId
-		// response: user snapshot to load main page
 		rooms, err := mongo.GetRooms()
 		if err != nil {
 			response := common.ResponseErrorFormatter(err)
@@ -25,7 +23,7 @@ func GetRooms(mongo *mongodb.MongoDB) func(c *gin.Context) {
 		fmt.Println("inside room_io_handler-getRooms!: ", rooms)
 		response := common.ResponseFormatter(http.StatusOK, "success", "get rooms successfull", rooms)
 		log.Println("RESPONSE TO BROWSER: ", response)
-		// Add CORS headers
+		// Add CORS headers, if no global CORS setting
 		// c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
 		// c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 

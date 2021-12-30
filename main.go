@@ -17,9 +17,9 @@ import (
 
 func main() {
 	if os.Getenv("APP_ENV") != "production" {
-		// production provide that "APP_ENV" variable
+		// production env provide that "APP_ENV" variable
 		// executed in development only,
-		//for production set those on production environment settings
+		//production set those on production environment settings
 
 		// load local env variables to os
 		err := godotenv.Load(".env")
@@ -31,20 +31,20 @@ func main() {
 	//mongoDB
 	mongo := mongodb.NewMongoDB()
 	// mongo.DataSeeder()
-	// rooms := mongo.GetRooms()
-	// fmt.Println("ROOMS: ", rooms)
 
 	// chat server
 	// #1 init global message server as goroutine. this server will be an argument for each client
 	hub := msgserver.NewHub()
 	go hub.Run()
 
-	// gin setup
+	// #2 init gin main server
 	router := gin.Default()
 	router.Use(CORS())
-	// #2 handle url to init websocket client connection (will have func to handle incoming url)
+
+	// #3 handle url to init websocket client connection (will have func to handle incoming url)
 	// this client will notify subscribe event to the global message server through channel.
-	// through auth header we'll have userId, it's enough to access database and get other data like client snapshot.
+	// through GetUserByEmail, we'll have email for user authentication
+
 	// router.GET("/", serveMainPage)
 	// router.Static("/static", "./static")
 	router.GET("/rooms", rooms.GetRooms(mongo))
@@ -54,11 +54,7 @@ func main() {
 	router.GET("/userByEmail", users.GetUserByEmail(mongo))
 	router.GET("/websocket", msgserver.InitWebsocket(hub, mongo))
 
-	// #3 init gin main server
-	// Query string parameters are parsed using the existing underlying request object.
-	// The request responds to a url matching:  /welcome?firstname=Jane&lastname=Doe
-	// router.GET("/static", serveStaticPage)
-	// router.POST("/publish", chatServer)
+	// #4 run router server
 	log.Println("server run on port:8080...")
 	router.Run(":8080")
 }

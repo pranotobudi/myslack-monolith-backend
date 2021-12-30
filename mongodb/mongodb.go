@@ -55,7 +55,6 @@ type MongoDB struct {
 
 func NewMongoDB() *MongoDB {
 	dbConfig := config.MongoDbConfig()
-	// clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb+srv://pranotobudi:%s@myslack-db.bovrx.mongodb.net/myFirstDatabase?retryWrites=true&w=majority", dbConfig.Password))
 	clientOptions := options.Client().ApplyURI("mongodb+srv://pranotobudi:myslack-db-password@myslack-db.bovrx.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -83,7 +82,7 @@ func (m *MongoDB) insertDoc(coll *mongo.Collection, name string, doc bson.D) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Inserted document with _id: \n", result.InsertedID)
+	log.Printf("Inserted document with _id: \n", result.InsertedID)
 }
 
 func (m *MongoDB) DataSeeder() {
