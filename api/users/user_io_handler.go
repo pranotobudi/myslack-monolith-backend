@@ -160,3 +160,13 @@ func UpdateUserRooms(mongo *mongodb.MongoDB) func(c *gin.Context) {
 
 	}
 }
+
+func HelloWorld(c *gin.Context) {
+	// firstname := c.DefaultQuery("firstname", "Guest")
+	// lastname := c.Query("lastname") // shortcut for c.Request.URL.Query().Get("lastname")
+
+	// c.String(http.StatusOK, "Hello %s %s", firstname, lastname)
+	response := common.ResponseFormatter(http.StatusOK, "success", "get user successfull", "Hello from MySlack App. A Persistence Chat App... The server is running at the background..")
+	log.Println("RESPONSE TO BROWSER: ", response)
+	c.JSON(http.StatusOK, response)
+}

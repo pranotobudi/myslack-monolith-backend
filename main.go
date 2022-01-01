@@ -48,7 +48,7 @@ func main() {
 
 	// router.GET("/", serveMainPage)
 	// router.Static("/static", "./static")
-	router.GET("/", helloWorld)
+	router.GET("/", users.HelloWorld)
 	router.GET("/rooms", rooms.GetRooms(mongo))
 	router.GET("/messages", messages.GetMessages(mongo))
 	router.POST("/room", rooms.AddRoom(mongo))
@@ -81,14 +81,6 @@ func chatServer(c *gin.Context) {
 	log.Println("inside chatServer! message Send..")
 	c.Writer.WriteHeader(http.StatusAccepted)
 	c.Writer.Write([]byte("msg send.."))
-}
-
-func helloWorld(c *gin.Context) {
-	// firstname := c.DefaultQuery("firstname", "Guest")
-	// lastname := c.Query("lastname") // shortcut for c.Request.URL.Query().Get("lastname")
-
-	// c.String(http.StatusOK, "Hello %s %s", firstname, lastname)
-	c.String(http.StatusOK, "Hello from MySlack App. A Persistence Chat App... The server is running at the background..")
 }
 
 func CORS() gin.HandlerFunc {
