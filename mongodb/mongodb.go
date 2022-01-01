@@ -21,13 +21,18 @@ type User struct {
 	Rooms     []string `json:"rooms"`
 }
 
+type UserAuth struct {
+	Email     string `json:"email"`
+	UserImage string `json:"user_image"`
+}
+
 type Message struct {
 	ID        string    `json:"id"`
 	Message   string    `json:"message"`
+	RoomID    string    `json:"room_id"`
 	UserID    string    `json:"user_id"`
 	Username  string    `json:"username"`
 	UserImage string    `json:"user_image"`
-	RoomID    string    `json:"room_id"`
 	Timestamp time.Time `json:"timestamp"`
 }
 type ClientMessage struct {
@@ -368,15 +373,20 @@ func (m *MongoDB) GetUsers(filter interface{}) ([]User, error) {
 	return finalResult, nil
 }
 
-func (m *MongoDB) GetUser(filter interface{}) (User, error) {
+func (m *MongoDB) GetUser(filter interface{}) (*User, error) {
 	coll := m.getCollection("users")
 	// filter := bson.D{}
 
+	result := coll.FindOne(context.TODO(), filter)
+	if result.Err() != nil {
+		log.Println("inside GetUser, user not found: ", result.Err())
+		return nil, result.Err()
+	}
 	var userMongo bson.M
-	err := coll.FindOne(context.TODO(), filter).Decode(&userMongo)
+	err := result.Decode(&userMongo)
 	if err != nil {
-		log.Println("inside GetUser, fail to decode: ", err)
-		return User{}, nil
+		log.Println("inside GetUser, fail to decode user: ", err)
+		return &User{}, err
 	}
 	log.Println("inside GetUser, userMongo: ", userMongo)
 
@@ -392,14 +402,14 @@ func (m *MongoDB) GetUser(filter interface{}) (User, error) {
 	user.UserImage = userMongo["user_image"].(string)
 
 	log.Println("inside GetUser, user: ", user)
-	return user, nil
+	return &user, nil
 }
 
-func (m *MongoDB) AddUser(message interface{}) (string, error) {
+func (m *MongoDB) AddUser(user interface{}) (string, error) {
 
 	coll := m.getCollection("users")
 	// doc := bson.D{{"name", roomName}}
-	result, err := coll.InsertOne(context.TODO(), message)
+	result, err := coll.InsertOne(context.TODO(), user)
 
 	if err != nil {
 		log.Println("failed to insert user: ", err)
@@ -407,6 +417,7 @@ func (m *MongoDB) AddUser(message interface{}) (string, error) {
 	}
 
 	return fmt.Sprintf("%v", result.InsertedID), nil
+	// return result.InsertedID.(string), nil
 }
 
 func (m *MongoDB) AddUsers(users []interface{}) ([]string, error) {

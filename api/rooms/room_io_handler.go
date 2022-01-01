@@ -60,6 +60,7 @@ func AddRoom(mongo *mongodb.MongoDB) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var room mongodb.Room
 		// c.Bind(&roomName)
+
 		c.BindJSON(&room)
 		log.Println("JSON roomName: ", room.Name)
 		roomId, err := mongo.AddRoom(room.Name)

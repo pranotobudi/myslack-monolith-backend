@@ -52,6 +52,7 @@ func main() {
 	router.POST("/room", rooms.AddRoom(mongo))
 	router.GET("/room", rooms.GetAnyRoom(mongo))
 	router.GET("/userByEmail", users.GetUserByEmail(mongo))
+	router.POST("/userAuth", users.UserAuth(mongo))
 	router.GET("/websocket", msgserver.InitWebsocket(hub, mongo))
 
 	// #4 run router server
