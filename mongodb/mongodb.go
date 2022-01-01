@@ -419,6 +419,26 @@ func (m *MongoDB) AddUser(user interface{}) (string, error) {
 	return fmt.Sprintf("%v", result.InsertedID), nil
 	// return result.InsertedID.(string), nil
 }
+func (m *MongoDB) UpdateUser(filter interface{}, update interface{}, options *options.UpdateOptions) error {
+
+	coll := m.getCollection("users")
+	// doc := bson.D{{"name", roomName}}
+	result, err := coll.UpdateOne(context.TODO(), filter, update, options)
+	if err != nil {
+		// if result.MatchedCount == 0 {
+		// 	log.Println("failed to update user: ")
+		// }
+		// log.Println("failed to insert user, result: ", result.UpsertedID)
+		log.Println("failed to insert user, error: ", err)
+		return err
+	}
+
+	log.Println("UpdateUser MatchedCount: ", result.MatchedCount, " UpsertedCount: ", result.UpsertedCount)
+	// userFilter := bson.M{"_id": result.UpsertedID.(primitive.ObjectID)}
+
+	// return fmt.Sprintf("%v", result.UpsertedID), nil
+	return nil
+}
 
 func (m *MongoDB) AddUsers(users []interface{}) ([]string, error) {
 

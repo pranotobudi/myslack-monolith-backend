@@ -10,6 +10,7 @@ import (
 	"github.com/pranotobudi/myslack-monolith-backend/mongodb"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func GetUserByEmail(mongo *mongodb.MongoDB) func(c *gin.Context) {
@@ -97,6 +98,65 @@ func UserAuth(mongo *mongodb.MongoDB) func(c *gin.Context) {
 		fmt.Println("inside room_io_handler-UserAuth user registered! ID: ", *userPtr)
 		response := common.ResponseFormatter(http.StatusOK, "success", "get user successfull", *userPtr)
 		log.Println("RESPONSE TO BROWSER: ", response)
+		c.JSON(http.StatusOK, response)
+
+	}
+}
+
+func UpdateUserRooms(mongo *mongodb.MongoDB) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		// login
+		var userMongo mongodb.User
+
+		err := c.BindJSON(&userMongo)
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, err)
+			return
+		}
+		// log.Println("UpdateUser - userMongo: ", userMongo)
+		// log.Println("UpdateUser - userMongo email: ", userMongo.Email)
+		log.Println("UpdateUser - userMongo rooms: ", userMongo.Rooms)
+		log.Println("UpdateUser - userMongo ID: ", userMongo.ID)
+
+		// filter := bson.D{{"email", userMongo.Email}}
+		// update := bson.M{"rooms": userMongo.Rooms}
+
+		filter := bson.M{"email": userMongo.Email}
+		opts := options.Update().SetUpsert(true)
+
+		// remove all user rooms first
+		update := bson.D{{"$set", bson.M{"rooms": []string{}}}}
+		err = mongo.UpdateUser(filter, update, opts)
+		if err != nil {
+			log.Println("inside user_io_handler-UpdateUser remove all user rooms, error: ", err)
+			c.JSON(http.StatusInternalServerError, err)
+			return
+		}
+
+		// add room one by one
+		for _, room := range userMongo.Rooms {
+			update := bson.D{{"$push", bson.M{"rooms": room}}}
+			err = mongo.UpdateUser(filter, update, opts)
+			if err != nil {
+				log.Println("inside user_io_handler-UpdateUser add room, error: ", err)
+				c.JSON(http.StatusInternalServerError, err)
+				return
+			}
+		}
+
+		// get user with updated rooms element
+		userPtr, err := mongo.GetUser(filter)
+		if err != nil {
+			log.Println("failed to GetUser")
+			c.JSON(http.StatusInternalServerError, err)
+			return
+		}
+
+		fmt.Println("inside room_io_handler-UserAuth user registered! ID: ", *userPtr)
+		response := common.ResponseFormatter(http.StatusOK, "success", "get user successfull", *userPtr)
+		log.Println("RESPONSE TO BROWSER: ", response)
+		c.JSON(http.StatusOK, response)
 
 	}
 }
