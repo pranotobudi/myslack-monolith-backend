@@ -11,6 +11,7 @@ import (
 	"github.com/pranotobudi/myslack-monolith-backend/api/messages"
 	"github.com/pranotobudi/myslack-monolith-backend/api/rooms"
 	"github.com/pranotobudi/myslack-monolith-backend/api/users"
+	"github.com/pranotobudi/myslack-monolith-backend/config"
 	"github.com/pranotobudi/myslack-monolith-backend/mongodb"
 	"github.com/pranotobudi/myslack-monolith-backend/msgserver"
 )
@@ -58,8 +59,10 @@ func main() {
 	router.GET("/websocket", msgserver.InitWebsocket(hub, mongo))
 
 	// #4 run router server
+	appConfig := config.AppConfig()
 	log.Println("server run on port:8080...")
-	router.Run(":8080")
+	router.Run(":" + appConfig.Port)
+	// router.Run(":8080")
 }
 
 func serveMainPage(c *gin.Context) {

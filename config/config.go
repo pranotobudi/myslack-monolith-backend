@@ -18,11 +18,13 @@ func MongoDbConfig() MongoDb {
 
 type AppEnvironment struct {
 	AppEnv string
+	Port   string
 }
 
 func AppConfig() AppEnvironment {
 	appConfig := AppEnvironment{
 		AppEnv: os.Getenv("APP_ENV"),
+		Port:   os.Getenv("PORT"),
 	}
 
 	return appConfig
