@@ -18,11 +18,12 @@ import (
 
 func main() {
 	if os.Getenv("APP_ENV") != "production" {
-		// production env provide that "APP_ENV" variable
+		// this code only intended for development, because we need to load .env variables in local env
 		// executed in development only,
-		//production set those on production environment settings
-
 		// load local env variables to os
+		// for production set those OS environment on production environment settings
+		// production env like heroku provide that "APP_ENV" variable
+		// for other platform (kubernetes): set APP_ENV = production manually
 		err := godotenv.Load(".env")
 		if err != nil {
 			log.Println("failed to load .env file")
