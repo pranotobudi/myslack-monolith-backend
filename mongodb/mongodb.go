@@ -87,7 +87,7 @@ func (m *MongoDB) insertDoc(coll *mongo.Collection, name string, doc bson.D) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Inserted document with _id: \n", result.InsertedID)
+	log.Println("Inserted document with _id: \n", result.InsertedID)
 }
 
 func (m *MongoDB) DataSeeder() {
