@@ -1,2 +1,2 @@
-.env
-/k8s-manifest
+.env 
+# at production we set the environment variables from other sources (kubernetes manifest)
