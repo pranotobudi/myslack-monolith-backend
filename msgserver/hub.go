@@ -9,13 +9,13 @@ import (
 )
 
 type Hub struct {
-	participants map[string]map[string]*client
+	participants map[string]map[string]*wsClient
 	// string type is for roomId,
 	// *client because we want to hold the reference (memory address) only
 
 	broadcastMsg chan mongodb.Message
-	register     chan *client
-	unregister   chan *client
+	register     chan *wsClient
+	unregister   chan *wsClient
 
 	// broadcastMsg     chan []byte
 	// broadcastMsg chan ClientMsg
@@ -31,15 +31,15 @@ type ClientMsg struct {
 func NewHub() *Hub {
 	log.Println("newHub")
 	return &Hub{
-		participants: make(map[string]map[string]*client),
-		register:     make(chan *client),
-		unregister:   make(chan *client),
+		participants: make(map[string]map[string]*wsClient),
+		register:     make(chan *wsClient),
+		unregister:   make(chan *wsClient),
 		broadcastMsg: make(chan mongodb.Message),
 		// broadcastMsg: make(chan ClientMsg),
 	}
 }
 
-func (h *Hub) addClient(roomName string, c *client) {
+func (h *Hub) addClient(roomName string, c *wsClient) {
 	h.participants[roomName][c.clientId] = c
 	// h.participants[roomName] = append(h.participants[roomName], c)
 }
@@ -81,7 +81,7 @@ func (h *Hub) Run() {
 	}
 }
 
-func (h *Hub) registerClient(c *client) error {
+func (h *Hub) registerClient(c *wsClient) error {
 	userId := c.clientId
 	objID, err := primitive.ObjectIDFromHex(userId)
 	log.Println("func registerClient - objID: ", objID, " userID: ", userId)
@@ -101,7 +101,7 @@ func (h *Hub) registerClient(c *client) error {
 	for _, room := range user.Rooms {
 		if h.participants[room] == nil {
 			// because each room is a map which has not been initialized, don't forget make(map[*client]bool)
-			h.participants[room] = make(map[string]*client)
+			h.participants[room] = make(map[string]*wsClient)
 		}
 		log.Println("--- before total member in: ", room, ": ", len(h.participants[room]), "roomID: ")
 		// add client to map of map
@@ -110,7 +110,7 @@ func (h *Hub) registerClient(c *client) error {
 	}
 	return nil
 }
-func (h *Hub) unregisterClient(c *client) error {
+func (h *Hub) unregisterClient(c *wsClient) error {
 	userId := c.clientId
 	objID, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {

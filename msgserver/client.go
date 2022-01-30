@@ -13,7 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type client struct {
+type wsClient struct {
 	conn              *websocket.Conn
 	clientId          string
 	clientToServerMsg chan string
@@ -47,8 +47,8 @@ var (
 	space   = []byte{' '}
 )
 
-func NewClient(conn *websocket.Conn, hub *Hub, mongodbConn *mongodb.MongoDB) *client {
-	return &client{
+func NewWsClient(conn *websocket.Conn, hub *Hub, mongodbConn *mongodb.MongoDB) *wsClient {
+	return &wsClient{
 		conn:              conn,
 		clientId:          "",
 		clientToServerMsg: make(chan string),
@@ -73,38 +73,46 @@ func NewClient(conn *websocket.Conn, hub *Hub, mongodbConn *mongodb.MongoDB) *cl
 	}
 }
 
-func InitWebsocket(hub *Hub, mongodbConn *mongodb.MongoDB) func(c *gin.Context) {
+func InitWebsocket(c *gin.Context) {
 
 	// init websocket
 	log.Println("initWebsocket")
-	return func(c *gin.Context) {
-		var upgrader websocket.Upgrader
-		upgrader = websocket.Upgrader{
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
-			CheckOrigin: func(r *http.Request) bool {
-				return true
-			},
-		}
+	//mongoDB
+	mongodbConn := mongodb.NewMongoDB()
+	// mongodbConn := mongodb.MongoDBInstance
+	// mongodbConn.DataSeeder()
 
-		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-		if err != nil {
-			log.Println("websocket connection failed: ", err)
-			return
-		}
-		log.Println("inside InitWebsocket! connection success")
+	// chat server
+	// #1 init global message server as goroutine. this server will be an argument for each client
+	hub := NewHub()
+	go hub.Run()
 
-		// notify hub for client initiation event
-		client := NewClient(conn, hub, mongodbConn)
-		// hub.addClient("room1", client)
-		// log.Println("register client to hub (will load client snapshot to hub)...", client)
-		// client.hub.register <- client
-
-		// Allow collection of memory referenced by the caller by doing all work in
-		// new goroutines.
-		go client.writePump()
-		go client.readPump()
+	var upgrader websocket.Upgrader
+	upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
 	}
+
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		log.Println("websocket connection failed: ", err)
+		return
+	}
+	log.Println("inside InitWebsocket! connection success")
+
+	// notify hub for client initiation event
+	client := NewWsClient(conn, hub, mongodbConn)
+	// hub.addClient("room1", client)
+	// log.Println("register client to hub (will load client snapshot to hub)...", client)
+	// client.hub.register <- client
+
+	// Allow collection of memory referenced by the caller by doing all work in
+	// new goroutines.
+	go client.writePump()
+	go client.readPump()
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -112,7 +120,7 @@ func InitWebsocket(hub *Hub, mongodbConn *mongodb.MongoDB) func(c *gin.Context) 
 // The application runs readPump in a per-connection goroutine. The application
 // ensures that there is at most one reader on a connection by executing all
 // reads from this goroutine.
-func (c *client) readPump() {
+func (c *wsClient) readPump() {
 	log.Println("ReadPump run...")
 	defer func() {
 		c.hub.unregister <- c
@@ -182,7 +190,7 @@ func (c *client) readPump() {
 // A goroutine running writePump is started for each connection. The
 // application ensures that there is at most one writer to a connection by
 // executing all writes from this goroutine.
-func (c *client) writePump() {
+func (c *wsClient) writePump() {
 	log.Println("writePump run...")
 	ticker := time.NewTicker(c.pingPeriod)
 	defer func() {

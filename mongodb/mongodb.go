@@ -2,8 +2,10 @@ package mongodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/pranotobudi/myslack-monolith-backend/config"
@@ -53,25 +55,59 @@ type Room struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
+
+type IMongoDB interface {
+	createCollection(name string)
+	getCollection(name string) *mongo.Collection
+	InsertDoc(name string, doc bson.D)
+	DataSeeder()
+	GetRooms() ([]Room, error)
+	GetRoom(filter interface{}) (Room, error)
+	GetAnyRoom() (Room, error)
+	AddRoom(roomName string) (string, error)
+	AddRooms(rooms []interface{}) ([]string, error)
+	GetMessages(filter interface{}) ([]Message, error)
+	GetMessage(filter interface{}) (Message, error)
+	AddMessage(message interface{}) (string, error)
+	AddMessages(messages []interface{}) ([]string, error)
+	GetUsers(filter interface{}) ([]User, error)
+	GetUser(filter interface{}) (*User, error)
+	AddUser(user interface{}) (string, error)
+	UpdateUser(filter interface{}, update interface{}, options *options.UpdateOptions) error
+	AddUsers(users []interface{}) ([]string, error)
+}
 type MongoDB struct {
 	client *mongo.Client
 	config config.MongoDb
 }
 
-func NewMongoDB() *MongoDB {
-	dbConfig := config.MongoDbConfig()
-	clientOptions := options.Client().ApplyURI("mongodb+srv://pranotobudi:myslack-db-password@myslack-db.bovrx.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+var MongoDBInstance *MongoDB
+var once sync.Once
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	client, err := mongo.Connect(ctx, clientOptions)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return &MongoDB{
-		client: client,
-		config: dbConfig,
-	}
+func NewMongoDB() *MongoDB {
+	once.Do(func() {
+		dbConfig := config.MongoDbConfig()
+		clientOptions := options.Client().ApplyURI("mongodb+srv://pranotobudi:myslack-db-password@myslack-db.bovrx.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		client, err := mongo.Connect(ctx, clientOptions)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Println("Database Connection success ...")
+		mongodb := &MongoDB{
+			client: client,
+			config: dbConfig,
+		}
+		MongoDBInstance = mongodb
+
+		// only if needed
+		// MongoDBInstance.DataSeeder()
+	})
+
+	return MongoDBInstance
 }
 func (m *MongoDB) createCollection(name string) {
 	coll := m.client.Database("myslack-db").Collection(name)
@@ -81,8 +117,18 @@ func (m *MongoDB) getCollection(name string) *mongo.Collection {
 	return m.client.Database(m.config.Name).Collection(name)
 }
 
-func (m *MongoDB) insertDoc(coll *mongo.Collection, name string, doc bson.D) {
+// func (m *MongoDB) insertDoc(coll *mongo.Collection, name string, doc bson.D) {
+// 	// doc := bson.D{{"title", "Invisible Cities"}, {"author", "Italo Calvino"}, {"year_published", 1974}}
+// 	result, err := coll.InsertOne(context.TODO(), doc)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	log.Println("Inserted document with _id: \n", result.InsertedID)
+// }
+
+func (m *MongoDB) InsertDoc(name string, doc bson.D) {
 	// doc := bson.D{{"title", "Invisible Cities"}, {"author", "Italo Calvino"}, {"year_published", 1974}}
+	coll := m.getCollection(name)
 	result, err := coll.InsertOne(context.TODO(), doc)
 	if err != nil {
 		log.Fatal(err)
@@ -95,7 +141,6 @@ func (m *MongoDB) DataSeeder() {
 	m.createCollection("rooms")
 	m.createCollection("users")
 	m.createCollection("messages")
-
 	rooms := []interface{}{
 		bson.D{{"name", "room1"}},
 		bson.D{{"name", "room2"}},
@@ -159,6 +204,7 @@ func (m *MongoDB) DataSeeder() {
 
 func (m *MongoDB) GetRooms() ([]Room, error) {
 	coll := m.getCollection("rooms")
+	log.Println("getRooms coll: ", coll)
 	filter := bson.D{}
 
 	cursor, err := coll.Find(context.TODO(), filter)
@@ -182,34 +228,43 @@ func (m *MongoDB) GetRooms() ([]Room, error) {
 	return finalResult, nil
 }
 
-func (m *MongoDB) GetRoom(filter interface{}) Room {
+func (m *MongoDB) GetRoom(filter interface{}) (Room, error) {
 	coll := m.getCollection("rooms")
 	// filter := bson.D{}
+	log.Println("getRoom coll: ", coll)
 
 	var roomMongo bson.M
 	coll.FindOne(context.TODO(), filter).Decode(&roomMongo)
-	log.Println("inside GetAnyRoom, roomMongo: ", roomMongo)
+	log.Println("inside GetRoom, roomMongo: ", roomMongo)
 
 	var room Room
+	if roomMongo == nil {
+		return room, errors.New("room not found")
+	}
 	room.ID = roomMongo["_id"].(primitive.ObjectID).Hex()
 	room.Name = roomMongo["name"].(string)
-	log.Println("inside GetAnyRoom, room: ", room)
-	return room
+	log.Println("inside GetRoom, room: ", room)
+	return room, nil
 }
 
-func (m *MongoDB) GetAnyRoom() Room {
+func (m *MongoDB) GetAnyRoom() (Room, error) {
 	coll := m.getCollection("rooms")
+	log.Println("GetAnyRoom coll: ", coll)
+
 	// filter := bson.D{}
 	var roomMongo bson.M
+	log.Println("inside GetAnyRoom, roomMongo before: ", roomMongo)
 	coll.FindOne(context.TODO(), bson.M{}).Decode(&roomMongo)
-	log.Println("inside GetAnyRoom, roomMongo: ", roomMongo)
-
+	log.Println("inside GetAnyRoom, roomMongo after: ", roomMongo)
 	var room Room
+	if roomMongo == nil {
+		return room, errors.New("room not found")
+	}
 	room.ID = roomMongo["_id"].(primitive.ObjectID).Hex()
 	room.Name = roomMongo["name"].(string)
 	log.Println("inside GetAnyRoom, room: ", room)
 
-	return room
+	return room, nil
 }
 
 func (m *MongoDB) AddRoom(roomName string) (string, error) {
