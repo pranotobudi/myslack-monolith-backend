@@ -24,13 +24,16 @@ func NewMessageHandler() *messageHandler {
 	return &messageHandler{service: messageService}
 }
 func (h *messageHandler) GetMessages(c *gin.Context) {
+	// TODO: we should use params instead of query, need changes in the frontend also
+	// because room_id is unique resource (params), not filtering (query)
 	log.Println("GetMessages params: ", c.Params)
-	roomId, ok := c.GetQuery("room_id")
-	log.Println("GetMessages - roomId: ", roomId, "Ok: ", ok)
-	if !ok {
-		c.JSON(http.StatusBadRequest, roomId)
-		return
-	}
+	roomId := c.Param("room_id")
+	// roomId, ok := c.GetQuery("room_id")
+	// log.Println("GetMessages - roomId: ", roomId, "Ok: ", ok)
+	// if !ok {
+	// 	c.JSON(http.StatusBadRequest, roomId)
+	// 	return
+	// }
 	filter := bson.M{"room_id": roomId}
 	// messages, err := mongo.GetMessages(filter)
 	messages, err := h.service.GetMessages(filter)

@@ -46,14 +46,14 @@ func (h *roomHandler) GetRooms(c *gin.Context) {
 func (h *roomHandler) GetAnyRoom(c *gin.Context) {
 	// request: userId
 	// response: user snapshot to load main page
-	room, err := h.roomService.GetAnyRoom()
+	roomPtr, err := h.roomService.GetAnyRoom()
 	if err != nil {
 		response := common.ResponseErrorFormatter(err)
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
-	response := common.ResponseFormatter(http.StatusOK, "success", "get rooms successfull", room)
+	response := common.ResponseFormatter(http.StatusOK, "success", "get rooms successfull", *roomPtr)
 	log.Println("RESPONSE TO BROWSER: ", response)
 	// Add CORS headers
 	// c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
@@ -67,7 +67,11 @@ func (h *roomHandler) AddRoom(c *gin.Context) {
 	var room mongodb.Room
 	// c.Bind(&roomName)
 
-	c.BindJSON(&room)
+	err := c.BindJSON(&room)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, room)
+		return
+	}
 	log.Println("JSON roomName: ", room.Name)
 	// roomId, err := mongo.AddRoom(room.Name)
 	roomId, err := h.roomService.AddRoom(room.Name)

@@ -62,8 +62,8 @@ type IMongoDB interface {
 	InsertDoc(name string, doc bson.D)
 	DataSeeder()
 	GetRooms() ([]Room, error)
-	GetRoom(filter interface{}) (Room, error)
-	GetAnyRoom() (Room, error)
+	GetRoom(filter interface{}) (*Room, error)
+	GetAnyRoom() (*Room, error)
 	AddRoom(roomName string) (string, error)
 	AddRooms(rooms []interface{}) ([]string, error)
 	GetMessages(filter interface{}) ([]Message, error)
@@ -228,7 +228,7 @@ func (m *MongoDB) GetRooms() ([]Room, error) {
 	return finalResult, nil
 }
 
-func (m *MongoDB) GetRoom(filter interface{}) (Room, error) {
+func (m *MongoDB) GetRoom(filter interface{}) (*Room, error) {
 	coll := m.getCollection("rooms")
 	// filter := bson.D{}
 	log.Println("getRoom coll: ", coll)
@@ -239,15 +239,15 @@ func (m *MongoDB) GetRoom(filter interface{}) (Room, error) {
 
 	var room Room
 	if roomMongo == nil {
-		return room, errors.New("room not found")
+		return &room, errors.New("room not found")
 	}
 	room.ID = roomMongo["_id"].(primitive.ObjectID).Hex()
 	room.Name = roomMongo["name"].(string)
 	log.Println("inside GetRoom, room: ", room)
-	return room, nil
+	return &room, nil
 }
 
-func (m *MongoDB) GetAnyRoom() (Room, error) {
+func (m *MongoDB) GetAnyRoom() (*Room, error) {
 	coll := m.getCollection("rooms")
 	log.Println("GetAnyRoom coll: ", coll)
 
@@ -258,13 +258,13 @@ func (m *MongoDB) GetAnyRoom() (Room, error) {
 	log.Println("inside GetAnyRoom, roomMongo after: ", roomMongo)
 	var room Room
 	if roomMongo == nil {
-		return room, errors.New("room not found")
+		return &room, errors.New("room not found")
 	}
 	room.ID = roomMongo["_id"].(primitive.ObjectID).Hex()
 	room.Name = roomMongo["name"].(string)
 	log.Println("inside GetAnyRoom, room: ", room)
 
-	return room, nil
+	return &room, nil
 }
 
 func (m *MongoDB) AddRoom(roomName string) (string, error) {

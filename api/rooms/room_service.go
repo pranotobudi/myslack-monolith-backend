@@ -10,7 +10,7 @@ import (
 
 type IRoomService interface {
 	GetRooms() ([]mongodb.Room, error)
-	GetAnyRoom() (mongodb.Room, error)
+	GetAnyRoom() (*mongodb.Room, error)
 	AddRoom(name string) (string, error)
 }
 type roomService struct {
@@ -26,25 +26,25 @@ func (s *roomService) GetRooms() ([]mongodb.Room, error) {
 	return s.repo.GetRooms()
 }
 
-func (s *roomService) GetAnyRoom() (mongodb.Room, error) {
-	anyRoom, err := s.repo.GetAnyRoom()
+func (s *roomService) GetAnyRoom() (*mongodb.Room, error) {
+	anyRoomPtr, err := s.repo.GetAnyRoom()
 	if err != nil {
-		return anyRoom, err
+		return anyRoomPtr, err
 	}
-	fmt.Println("inside room_io_handler-getRoom anyRoom!: ", anyRoom)
-	objID, err := primitive.ObjectIDFromHex(anyRoom.ID)
+	fmt.Println("inside room_io_handler-getRoom anyRoom!: ", *anyRoomPtr)
+	objID, err := primitive.ObjectIDFromHex(anyRoomPtr.ID)
 	if err != nil {
 		// panic(err)
-		return anyRoom, err
+		return anyRoomPtr, err
 	}
 
 	filter := bson.M{"_id": objID}
-	room, err := s.repo.GetRoom(filter)
+	roomPtr, err := s.repo.GetRoom(filter)
 	if err != nil {
-		return room, err
+		return roomPtr, err
 	}
-	fmt.Println("inside room_io_handler-getRoom!: ", room)
-	return room, nil
+	fmt.Println("inside room_io_handler-getRoom!: ", *roomPtr)
+	return roomPtr, nil
 }
 
 func (s *roomService) AddRoom(name string) (string, error) {
