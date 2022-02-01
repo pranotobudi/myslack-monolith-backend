@@ -33,41 +33,6 @@ func StartApp() {
 		log.Println("Load development environment variables..")
 	}
 
-	// //mongoDB
-	// mongo := mongodb.NewMongoDB()
-	// // mongo.DataSeeder()
-
-	// // chat server
-	// // #1 init global message server as goroutine. this server will be an argument for each client
-	// hub := msgserver.NewHub()
-	// go hub.Run()
-
-	// // #2 init gin main server
-	// router := gin.Default()
-	// router.Use(CORS())
-
-	// // #3 handle url to init websocket client connection (will have func to handle incoming url)
-	// // this client will notify subscribe event to the global message server through channel.
-	// // through GetUserByEmail, we'll have email for user authentication
-
-	// // router.GET("/", serveMainPage)
-	// // router.Static("/static", "./static")
-	// router.GET("/", users.HelloWorld)
-	// router.GET("/rooms", rooms.GetRooms(mongo))
-	// router.GET("/messages", messages.GetMessages(mongo))
-	// router.POST("/room", rooms.AddRoom(mongo))
-	// router.GET("/room", rooms.GetAnyRoom(mongo))
-	// router.GET("/userByEmail", users.GetUserByEmail(mongo))
-	// router.POST("/userAuth", users.UserAuth(mongo))
-	// router.PUT("/updateUserRooms", users.UpdateUserRooms(mongo))
-	// router.GET("/websocket", msgserver.InitWebsocket(hub, mongo))
-
-	// // #4 run router server
-	// appConfig := config.AppConfig()
-	// log.Println("server run on port:8080...")
-	// router.Run(":" + appConfig.Port)
-	// // router.Run(":8080")
-
 	// # run router server
 	appConfig := config.AppConfig()
 	log.Println("server run on port:8080...")
@@ -138,22 +103,6 @@ func chatServer(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusAccepted)
 	c.Writer.Write([]byte("msg send.."))
 }
-
-// func CORS() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-// 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-// 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-// 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
-
-// 		if c.Request.Method == "OPTIONS" {
-// 			c.AbortWithStatus(204)
-// 			return
-// 		}
-
-// 		c.Next()
-// 	}
-// }
 
 func CORS(c *gin.Context) {
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
