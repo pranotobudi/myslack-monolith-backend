@@ -17,15 +17,18 @@ type roomService struct {
 	repo mongodb.IMongoDB
 }
 
+// NewRoomService will initialize roomService object
 func NewRoomService() *roomService {
 	r := mongodb.NewMongoDB()
 	return &roomService{repo: r}
 }
 
+// GetRooms will get all rooms available
 func (s *roomService) GetRooms() ([]mongodb.Room, error) {
 	return s.repo.GetRooms()
 }
 
+// GetAnyRoom will return one room with no specific condition
 func (s *roomService) GetAnyRoom() (*mongodb.Room, error) {
 	anyRoomPtr, err := s.repo.GetAnyRoom()
 	if err != nil {
@@ -47,6 +50,7 @@ func (s *roomService) GetAnyRoom() (*mongodb.Room, error) {
 	return roomPtr, nil
 }
 
+// AddRoom will add room to the database
 func (s *roomService) AddRoom(name string) (string, error) {
 	return s.repo.AddRoom(name)
 }

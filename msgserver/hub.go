@@ -28,6 +28,7 @@ type ClientMsg struct {
 	RoomId   string `json:"room_id"`
 }
 
+// NewHub creates newHub object
 func NewHub() *Hub {
 	log.Println("newHub")
 	return &Hub{
@@ -44,6 +45,7 @@ func (h *Hub) addClient(roomName string, c *wsClient) {
 	// h.participants[roomName] = append(h.participants[roomName], c)
 }
 
+// Run will run hub in infinite looping
 func (h *Hub) Run() {
 	log.Println("inside Run")
 	for {
@@ -81,6 +83,7 @@ func (h *Hub) Run() {
 	}
 }
 
+// registerClient will register the client to the hub
 func (h *Hub) registerClient(c *wsClient) error {
 	userId := c.clientId
 	objID, err := primitive.ObjectIDFromHex(userId)
@@ -110,6 +113,8 @@ func (h *Hub) registerClient(c *wsClient) error {
 	}
 	return nil
 }
+
+// unregisterClient will unregister the client from the hub
 func (h *Hub) unregisterClient(c *wsClient) error {
 	userId := c.clientId
 	objID, err := primitive.ObjectIDFromHex(userId)

@@ -47,6 +47,7 @@ var (
 	space   = []byte{' '}
 )
 
+// NewWsClient will initiate new client of this websocket connection
 func NewWsClient(conn *websocket.Conn, hub *Hub, mongodbConn *mongodb.MongoDB) *wsClient {
 	return &wsClient{
 		conn:              conn,

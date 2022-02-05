@@ -17,12 +17,15 @@ type messageHandler struct {
 	service IMessageService
 }
 
+// NewMessageHandler initialize messageHandler object
 func NewMessageHandler() *messageHandler {
 
 	// func NewMessageHandler(messageService IMessageService) *messageHandler {
 	messageService := NewMessageService()
 	return &messageHandler{service: messageService}
 }
+
+// GetMessages will return list of messages for a room_id
 func (h *messageHandler) GetMessages(c *gin.Context) {
 	// TODO: we should use params instead of query, need changes in the frontend also
 	// because room_id is unique resource (params), not filtering (query)

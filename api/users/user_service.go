@@ -18,16 +18,19 @@ type userService struct {
 	repo mongodb.IMongoDB
 }
 
+// NewUserService will return userService object
 func NewUserService() *userService {
 	r := mongodb.NewMongoDB()
 	return &userService{repo: r}
 }
 
+// GetUser will return User based on email
 func (s *userService) GetUser(email string) (*mongodb.User, error) {
 	filter := bson.M{"email": email}
 	return s.repo.GetUser(filter)
 }
 
+// UserAuth will return user if exist or create new user if not exist
 func (s *userService) UserAuth(userAuth mongodb.UserAuth) (*mongodb.User, error) {
 	log.Println("UserService - UserAuth: ", userAuth)
 	filter := bson.M{"email": userAuth.Email}
@@ -69,6 +72,7 @@ func (s *userService) UserAuth(userAuth mongodb.UserAuth) (*mongodb.User, error)
 	return userPtr, nil
 }
 
+// UpdateUserRooms will update rooms field for each user
 func (s *userService) UpdateUserRooms(userMongo mongodb.User) (*mongodb.User, error) {
 	filter := bson.M{"email": userMongo.Email}
 	opts := options.Update().SetUpsert(true)
@@ -96,5 +100,4 @@ func (s *userService) UpdateUserRooms(userMongo mongodb.User) (*mongodb.User, er
 	}
 
 	return userPtr, nil
-
 }

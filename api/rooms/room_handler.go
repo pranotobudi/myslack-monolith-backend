@@ -20,11 +20,13 @@ type roomHandler struct {
 	roomService IRoomService
 }
 
+// NewRoomHandler will initialize roomHandler object
 func NewRoomHandler() *roomHandler {
 	roomService := NewRoomService()
 	return &roomHandler{roomService: roomService}
 }
 
+// GetRooms will return all rooms available
 func (h *roomHandler) GetRooms(c *gin.Context) {
 	// rooms, err := mongo.GetRooms()
 	rooms, err := h.roomService.GetRooms()
@@ -43,6 +45,7 @@ func (h *roomHandler) GetRooms(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// GetAnyRoom will return one room with no specific condition
 func (h *roomHandler) GetAnyRoom(c *gin.Context) {
 	// request: userId
 	// response: user snapshot to load main page
@@ -62,6 +65,7 @@ func (h *roomHandler) GetAnyRoom(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// AddRoom will add room to the database
 func (h *roomHandler) AddRoom(c *gin.Context) {
 
 	var room mongodb.Room

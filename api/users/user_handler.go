@@ -20,11 +20,13 @@ type userHandler struct {
 	userService IUserService
 }
 
+// NewUserHandler will initialize userHandler object
 func NewUserHandler() *userHandler {
 	userService := NewUserService()
 	return &userHandler{userService: userService}
 }
 
+// GetUserByEmail will return user based on email
 func (h *userHandler) GetUserByEmail(c *gin.Context) {
 	email, ok := c.GetQuery("email")
 	log.Println("GetUserByEmail - email: ", email)
@@ -50,8 +52,8 @@ func (h *userHandler) GetUserByEmail(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// UserAuth will return user if exist or create new user if not exist
 func (h *userHandler) UserAuth(c *gin.Context) {
-	// return func(c *gin.Context) {
 	// login
 	var userAuth mongodb.UserAuth
 
@@ -68,49 +70,6 @@ func (h *userHandler) UserAuth(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
-	// filter := bson.M{"email": userAuth.Email}
-	// userPtr, err := mongo.GetUser(filter)
-	// if err != nil {
-	// 	// c.JSON(http.StatusInternalServerError, err)
-	// 	// return
-	// 	log.Println("inside room_io_handler-UserAuth error: ", err)
-	// }
-
-	// if userPtr != nil {
-	// 	// two possibility:
-	// 	// empty User{}, means: user found but failed to decode
-	// 	// non-empty User, means: user found and success to decode
-	// 	// for both result we'll return it anyway
-
-	// 	fmt.Println("inside room_io_handler-UserAuth user found!: ", *userPtr)
-	// 	response := common.ResponseFormatter(http.StatusOK, "success", "get user successfull", *userPtr)
-	// 	log.Println("RESPONSE TO BROWSER: ", response)
-	// 	// Add CORS headers, if no global CORS setting
-	// 	// c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-	// 	// c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
-
-	// 	c.JSON(http.StatusOK, response)
-	// 	return
-	// }
-
-	// // user == nil, user not found
-	// // register
-	// userDoc := bson.D{{"email", userAuth.Email}, {"username", ""}, {"user_image", userAuth.UserImage}, {"rooms", bson.A{}}}
-	// userID, err := mongo.AddUser(userDoc)
-
-	// // return User data as response
-	// objID, err := primitive.ObjectIDFromHex(userID)
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, err)
-	// 	return
-	// }
-
-	// filter = bson.M{"_id": objID}
-	// userPtr, err = mongo.GetUser(filter)
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, err)
-	// 	return
-	// }
 
 	fmt.Println("inside room_io_handler-UserAuth user registered! ID: ", *userPtr)
 	response := common.ResponseFormatter(http.StatusOK, "success", "get user successfull", *userPtr)
@@ -142,6 +101,7 @@ func (h *userHandler) UpdateUserRooms(c *gin.Context) {
 
 }
 
+// HelloWorld will return welcome message for home path
 func HelloWorld(c *gin.Context) {
 	// firstname := c.DefaultQuery("firstname", "Guest")
 	// lastname := c.Query("lastname") // shortcut for c.Request.URL.Query().Get("lastname")

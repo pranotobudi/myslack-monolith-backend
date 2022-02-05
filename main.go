@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -20,8 +19,8 @@ func main() {
 }
 func StartApp() {
 	if os.Getenv("APP_ENV") != "production" {
-		// this code only intended for development, because we need to load .env variables in local env
-		// executed in development only,
+		// executed in development, because we need to load .env variables in local env
+		// in development only,
 		// load local env variables to os
 		// for production set those OS environment on production environment settings
 		// production env like heroku provide that "APP_ENV" variable
@@ -40,18 +39,10 @@ func StartApp() {
 
 }
 func Router() *gin.Engine {
-	//mongoDB
-	// mongo := mongodb.NewMongoDB()
-	// mongo.DataSeeder()
-
 	// handler
 	messageHandler := messages.NewMessageHandler()
 	roomHandler := rooms.NewRoomHandler()
 	userHandler := users.NewUserHandler()
-	// // chat server
-	// // #1 init global message server as goroutine. this server will be an argument for each client
-	// hub := msgserver.NewHub()
-	// go hub.Run()
 
 	// #2 init gin main server
 	gin.SetMode(gin.ReleaseMode)
@@ -59,19 +50,6 @@ func Router() *gin.Engine {
 	router.Use(CORS)
 	// #3 handle url to init websocket client connection (will have func to handle incoming url)
 	// this client will notify subscribe event to the global message server through channel.
-	// through GetUserByEmail, we'll have email for user authentication
-
-	// router.GET("/", serveMainPage)
-	// router.Static("/static", "./static")
-	// router.GET("/", users.HelloWorld)
-	// router.GET("/rooms", rooms.GetRooms(mongo))
-	// router.POST("/room", rooms.AddRoom(mongo))
-	// router.GET("/room", rooms.GetAnyRoom(mongo))
-	// router.GET("/messages", messages.GetMessages(mongo))
-	// router.GET("/userByEmail", users.GetUserByEmail(mongo))
-	// router.POST("/userAuth", users.UserAuth(mongo))
-	// router.PUT("/updateUserRooms", users.UpdateUserRooms(mongo))
-	// router.GET("/websocket", msgserver.InitWebsocket(hub, mongo))
 
 	router.GET("/", users.HelloWorld)
 	router.GET("/rooms", roomHandler.GetRooms)
@@ -82,26 +60,8 @@ func Router() *gin.Engine {
 	router.POST("/userAuth", userHandler.UserAuth)
 	router.PUT("/updateUserRooms", userHandler.UpdateUserRooms)
 	router.GET("/websocket", msgserver.InitWebsocket)
-	// router.GET("/websocket", msgserver.InitWebsocket(hub, mongo))
 
 	return router
-}
-func serveMainPage(c *gin.Context) {
-	// request: userId
-	// response: user snapshot to load main page
-	fmt.Println("inside serveMainPage!")
-	c.File("static/index.html")
-}
-func serveStaticPage(c *gin.Context) {
-	fmt.Println("inside serveStaticPage!")
-	filePath := c.Request.URL.Path
-	c.File(filePath)
-}
-
-func chatServer(c *gin.Context) {
-	log.Println("inside chatServer! message Send..")
-	c.Writer.WriteHeader(http.StatusAccepted)
-	c.Writer.Write([]byte("msg send.."))
 }
 
 func CORS(c *gin.Context) {
@@ -117,3 +77,21 @@ func CORS(c *gin.Context) {
 
 	c.Next()
 }
+
+// func serveMainPage(c *gin.Context) {
+// 	// request: userId
+// 	// response: user snapshot to load main page
+// 	fmt.Println("inside serveMainPage!")
+// 	c.File("static/index.html")
+// }
+// func serveStaticPage(c *gin.Context) {
+// 	fmt.Println("inside serveStaticPage!")
+// 	filePath := c.Request.URL.Path
+// 	c.File(filePath)
+// }
+
+// func chatServer(c *gin.Context) {
+// 	log.Println("inside chatServer! message Send..")
+// 	c.Writer.WriteHeader(http.StatusAccepted)
+// 	c.Writer.Write([]byte("msg send.."))
+// }
