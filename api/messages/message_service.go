@@ -1,6 +1,8 @@
 package messages
 
-import "github.com/pranotobudi/myslack-monolith-backend/mongodb"
+import (
+	"github.com/pranotobudi/myslack-monolith-backend/mongodb"
+)
 
 type IMessageService interface {
 	GetMessages(filter interface{}) ([]mongodb.Message, error)

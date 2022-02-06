@@ -301,6 +301,7 @@ func (m *MongoDB) AddRooms(rooms []interface{}) ([]string, error) {
 }
 
 func (m *MongoDB) GetMessages(filter interface{}) ([]Message, error) {
+	log.Println("INSIDE REPO GetMessages")
 	coll := m.getCollection("messages")
 	// oid, err := primitive.ObjectIDFromHex(roomId)
 	// if err != nil {

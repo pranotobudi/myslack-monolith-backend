@@ -13,15 +13,15 @@ import (
 )
 
 var (
-	getMessagesFunc func(filter interface{}) ([]mongodb.Message, error)
+	getMessagesServiceFunc func(filter interface{}) ([]mongodb.Message, error)
 )
 
-type mockService struct{}
+type mockMessageService struct{}
 
-func (m *mockService) GetMessages(filter interface{}) ([]mongodb.Message, error) {
-	return getMessagesFunc(filter)
+func (m *mockMessageService) GetMessages(filter interface{}) ([]mongodb.Message, error) {
+	return getMessagesServiceFunc(filter)
 }
-func TestGetMessages(t *testing.T) {
+func TestGetMessagesHandler(t *testing.T) {
 
 	tt := []struct {
 		Name     string
@@ -45,19 +45,20 @@ func TestGetMessages(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
-			getMessagesFunc = tc.mockFunc
+			getMessagesServiceFunc = tc.mockFunc
 
 			// messageHandler := NewMessageHandler(&mockService{})
 			messageHandler := NewMessageHandler()
-			messageHandler.service = &mockService{}
+			messageHandler.service = &mockMessageService{}
 			rc := httptest.NewRecorder()
 			// gin.SetMode(gin.ReleaseMode)
 			c, _ := gin.CreateTestContext(rc)
-			// c.Request, _ = http.NewRequest(http.MethodGet, "http://localhost:8080/messages?room_id=61f61d94fc663b6f4c8f3172", nil)
-			c.Request, _ = http.NewRequest(http.MethodGet, "", nil) // c.Params doesn't work for c.GetQuery("room_id")
-			c.Params = gin.Params{
-				{Key: "room_id", Value: "61f61d94fc663b6f4c8f3172"},
-			}
+			c.Request, _ = http.NewRequest(http.MethodGet, "http://localhost:8080/messages?room_id=61f61d94fc663b6f4c8f3172", nil)
+			// c.Request, _ = http.NewRequest(http.MethodGet, "", nil) // c.Params doesn't work for c.GetQuery("room_id")
+			// c.Params = gin.Params{
+			// 	{Key: "room_id", Value: "61f61d94fc663b6f4c8f3172"},
+			// }
+
 			log.Println(c.Params, c.Request.RequestURI)
 			messageHandler.GetMessages(c)
 

@@ -33,6 +33,7 @@ func StartApp() {
 	}
 
 	// # run router server
+	gin.SetMode(gin.ReleaseMode)
 	appConfig := config.AppConfig()
 	log.Println("server run on port:8080...")
 	http.ListenAndServe(":"+appConfig.Port, Router())
@@ -45,9 +46,10 @@ func Router() *gin.Engine {
 	userHandler := users.NewUserHandler()
 
 	// #2 init gin main server
-	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 	router.Use(CORS)
+	// gin.SetMode(gin.ReleaseMode)
+
 	// #3 handle url to init websocket client connection (will have func to handle incoming url)
 	// this client will notify subscribe event to the global message server through channel.
 
