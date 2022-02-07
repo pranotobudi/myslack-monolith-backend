@@ -4,8 +4,6 @@ import (
 	"fmt"
 
 	"github.com/pranotobudi/myslack-monolith-backend/mongodb"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type IRoomService interface {
@@ -35,19 +33,20 @@ func (s *roomService) GetAnyRoom() (*mongodb.Room, error) {
 		return anyRoomPtr, err
 	}
 	fmt.Println("inside room_io_handler-getRoom anyRoom!: ", *anyRoomPtr)
-	objID, err := primitive.ObjectIDFromHex(anyRoomPtr.ID)
-	if err != nil {
-		// panic(err)
-		return anyRoomPtr, err
-	}
+	return anyRoomPtr, nil
+	// objID, err := primitive.ObjectIDFromHex(anyRoomPtr.ID)
+	// if err != nil {
+	// 	// panic(err)
+	// 	return anyRoomPtr, err
+	// }
 
-	filter := bson.M{"_id": objID}
-	roomPtr, err := s.repo.GetRoom(filter)
-	if err != nil {
-		return roomPtr, err
-	}
-	fmt.Println("inside room_io_handler-getRoom!: ", *roomPtr)
-	return roomPtr, nil
+	// filter := bson.M{"_id": objID}
+	// roomPtr, err := s.repo.GetRoom(filter)
+	// if err != nil {
+	// 	return roomPtr, err
+	// }
+	// fmt.Println("inside room_io_handler-getRoom!: ", *roomPtr)
+	// return roomPtr, nil
 }
 
 // AddRoom will add room to the database

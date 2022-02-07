@@ -35,12 +35,13 @@ func (s *userService) UserAuth(userAuth mongodb.UserAuth) (*mongodb.User, error)
 	log.Println("UserService - UserAuth: ", userAuth)
 	filter := bson.M{"email": userAuth.Email}
 	userPtr, err := s.repo.GetUser(filter)
-	log.Println("UserService - userPtr: ", *userPtr)
 	if err != nil {
 		// c.JSON(http.StatusInternalServerError, err)
 		// return
 		log.Println("inside room_io_handler-UserAuth error: ", err)
+		return nil, err
 	}
+	log.Println("UserService - userPtr: ", *userPtr)
 
 	if userPtr != nil {
 		// two possibility:
