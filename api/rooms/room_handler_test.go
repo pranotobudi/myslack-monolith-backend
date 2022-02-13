@@ -2,12 +2,14 @@ package rooms
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pranotobudi/myslack-monolith-backend/common"
 	"github.com/pranotobudi/myslack-monolith-backend/mongodb"
 	"github.com/stretchr/testify/assert"
 )
@@ -63,12 +65,19 @@ func TestGetRooms(t *testing.T) {
 			// messageHandler := NewMessageHandler(&mockService{})
 			roomHandler := NewRoomHandler()
 			roomHandler.roomService = &mockService{}
-			rc := httptest.NewRecorder()
-			c, _ := gin.CreateTestContext(rc)
+			rr := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(rr)
 			c.Request, _ = http.NewRequest(http.MethodGet, "", nil) // c.Params doesn't 			log.Println(c.Params, c.Request.RequestURI)
 			roomHandler.GetRooms(c)
 
-			assert.EqualValues(t, tc.CodeWant, rc.Code)
+			// check header StatusCode
+			assert.EqualValues(t, tc.CodeWant, rr.Code)
+			// check response (JSON format) StatusCode
+			var response common.Response
+			if err := json.NewDecoder(rr.Body).Decode(&response); err != nil {
+				assert.Errorf(t, err, "response format is not valid")
+			}
+			assert.EqualValues(t, tc.CodeWant, response.Meta.Code)
 			// log.Println("test response: ", rc.Body.String())
 		})
 	}
@@ -103,12 +112,19 @@ func TestGetAnyRoom(t *testing.T) {
 			// messageHandler := NewMessageHandler(&mockService{})
 			roomHandler := NewRoomHandler()
 			roomHandler.roomService = &mockService{}
-			rc := httptest.NewRecorder()
-			c, _ := gin.CreateTestContext(rc)
+			rr := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(rr)
 			c.Request, _ = http.NewRequest(http.MethodGet, "", nil) // c.Params doesn't 			log.Println(c.Params, c.Request.RequestURI)
 			roomHandler.GetAnyRoom(c)
 
-			assert.EqualValues(t, tc.CodeWant, rc.Code)
+			// check header StatusCode
+			assert.EqualValues(t, tc.CodeWant, rr.Code)
+			// check response (JSON format) StatusCode
+			var response common.Response
+			if err := json.NewDecoder(rr.Body).Decode(&response); err != nil {
+				assert.Errorf(t, err, "response format is not valid")
+			}
+			assert.EqualValues(t, tc.CodeWant, response.Meta.Code)
 			// log.Println("test response: ", rc.Body.String())
 		})
 	}
@@ -158,12 +174,19 @@ func TestAddRoom(t *testing.T) {
 			// messageHandler := NewMessageHandler(&mockService{})
 			roomHandler := NewRoomHandler()
 			roomHandler.roomService = &mockService{}
-			rc := httptest.NewRecorder()
-			c, _ := gin.CreateTestContext(rc)
+			rr := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(rr)
 			c.Request, _ = http.NewRequest(tc.HttpMethod, "", bytes.NewBuffer(tc.Body)) // c.Params doesn't 			log.Println(c.Params, c.Request.RequestURI)
 			roomHandler.AddRoom(c)
 
-			assert.EqualValues(t, tc.CodeWant, rc.Code)
+			// check header StatusCode
+			assert.EqualValues(t, tc.CodeWant, rr.Code)
+			// check response (JSON format) StatusCode
+			var response common.Response
+			if err := json.NewDecoder(rr.Body).Decode(&response); err != nil {
+				assert.Errorf(t, err, "response format is not valid")
+			}
+			assert.EqualValues(t, tc.CodeWant, response.Meta.Code)
 			// log.Println("test response: ", rc.Body.String())
 		})
 	}

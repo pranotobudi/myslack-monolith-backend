@@ -1,6 +1,7 @@
 package users
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -31,14 +32,15 @@ func (h *userHandler) GetUserByEmail(c *gin.Context) {
 	email, ok := c.GetQuery("email")
 	log.Println("GetUserByEmail - email: ", email)
 	if !ok {
-		c.JSON(http.StatusBadRequest, email)
+		response := common.ResponseErrorFormatter(http.StatusBadRequest, errors.New("failed to get request query - email"))
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 	// filter := bson.M{"email": email}
 	// userPtr, err := mongo.GetUser(filter)
 	userPtr, err := h.userService.GetUser(email)
 	if err != nil {
-		response := common.ResponseErrorFormatter(err)
+		response := common.ResponseErrorFormatter(http.StatusInternalServerError, err)
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
@@ -60,13 +62,14 @@ func (h *userHandler) UserAuth(c *gin.Context) {
 	err := c.BindJSON(&userAuth)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		response := common.ResponseErrorFormatter(http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 	log.Println("GetUserByEmail - email: ", userAuth.Email)
 	userPtr, err := h.userService.UserAuth(userAuth)
 	if err != nil {
-		response := common.ResponseErrorFormatter(err)
+		response := common.ResponseErrorFormatter(http.StatusInternalServerError, err)
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
@@ -84,13 +87,14 @@ func (h *userHandler) UpdateUserRooms(c *gin.Context) {
 	err := c.BindJSON(&userMongo)
 	log.Println("UpdateUserRooms userMongo: ", userMongo)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		response := common.ResponseErrorFormatter(http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	userPtr, err := h.userService.UpdateUserRooms(userMongo)
 	if err != nil {
-		response := common.ResponseErrorFormatter(err)
+		response := common.ResponseErrorFormatter(http.StatusInternalServerError, err)
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}

@@ -31,7 +31,7 @@ func (h *roomHandler) GetRooms(c *gin.Context) {
 	// rooms, err := mongo.GetRooms()
 	rooms, err := h.roomService.GetRooms()
 	if err != nil {
-		response := common.ResponseErrorFormatter(err)
+		response := common.ResponseErrorFormatter(http.StatusInternalServerError, err)
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
@@ -51,7 +51,7 @@ func (h *roomHandler) GetAnyRoom(c *gin.Context) {
 	// response: user snapshot to load main page
 	roomPtr, err := h.roomService.GetAnyRoom()
 	if err != nil {
-		response := common.ResponseErrorFormatter(err)
+		response := common.ResponseErrorFormatter(http.StatusInternalServerError, err)
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
@@ -73,14 +73,16 @@ func (h *roomHandler) AddRoom(c *gin.Context) {
 
 	err := c.BindJSON(&room)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, room)
+		response := common.ResponseErrorFormatter(http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 	log.Println("JSON roomName: ", room.Name)
 	// roomId, err := mongo.AddRoom(room.Name)
 	roomId, err := h.roomService.AddRoom(room.Name)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, roomId)
+		response := common.ResponseErrorFormatter(http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 	fmt.Println("room_io_handler-AddRoom: ", roomId)

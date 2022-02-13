@@ -1,6 +1,7 @@
 package messages
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -34,14 +35,15 @@ func (h *messageHandler) GetMessages(c *gin.Context) {
 	roomId, ok := c.GetQuery("room_id")
 	log.Println("GetMessages - roomId: ", roomId, "Ok: ", ok)
 	if !ok {
-		c.JSON(http.StatusBadRequest, roomId)
+		response := common.ResponseErrorFormatter(http.StatusBadRequest, errors.New("failed to get request Query"))
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 	filter := bson.M{"room_id": roomId}
 	// messages, err := mongo.GetMessages(filter)
 	messages, err := h.service.GetMessages(filter)
 	if err != nil {
-		response := common.ResponseErrorFormatter(err)
+		response := common.ResponseErrorFormatter(http.StatusInternalServerError, err)
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
