@@ -19,11 +19,6 @@ type Meta struct {
 	Status  string      `json:"status"`
 	Message interface{} `json:"message"`
 }
-
-func (m Meta) String() string {
-	return fmt.Sprintf("code: %v\n Status:%v\n Message:%v", m.Code, m.Status, m.Message)
-}
-
 type M map[string]interface{}
 
 func ResponseFormatter(code int, status string, message interface{}, data interface{}) Response {

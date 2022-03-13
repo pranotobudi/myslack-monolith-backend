@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/pranotobudi/myslack-monolith-backend/api/emails"
 	"github.com/pranotobudi/myslack-monolith-backend/api/messages"
 	"github.com/pranotobudi/myslack-monolith-backend/api/rooms"
 	"github.com/pranotobudi/myslack-monolith-backend/api/users"

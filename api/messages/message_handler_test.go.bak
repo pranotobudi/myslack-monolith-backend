@@ -15,31 +15,31 @@ import (
 )
 
 var (
-	getMessagesServiceFunc func(roomId string) ([]mongodb.Message, error)
+	getMessagesServiceFunc func(filter interface{}) ([]mongodb.Message, error)
 )
 
 type mockMessageService struct{}
 
-func (m *mockMessageService) GetMessages(roomId string) ([]mongodb.Message, error) {
-	return getMessagesServiceFunc(roomId)
+func (m *mockMessageService) GetMessages(filter interface{}) ([]mongodb.Message, error) {
+	return getMessagesServiceFunc(filter)
 }
 func TestGetMessagesHandler(t *testing.T) {
 
 	tt := []struct {
 		Name     string
-		mockFunc func(roomId string) ([]mongodb.Message, error)
+		mockFunc func(filter interface{}) ([]mongodb.Message, error)
 		CodeWant int
 	}{
 		{
 			Name: "GetMessages Success",
-			mockFunc: func(roomId string) ([]mongodb.Message, error) {
+			mockFunc: func(filter interface{}) ([]mongodb.Message, error) {
 				return []mongodb.Message{}, nil
 			},
 			CodeWant: http.StatusOK,
 		},
 		{
 			Name: "GetMessages Failed",
-			mockFunc: func(roomId string) ([]mongodb.Message, error) {
+			mockFunc: func(filter interface{}) ([]mongodb.Message, error) {
 				return nil, errors.New("fail to get messages")
 			},
 			CodeWant: http.StatusInternalServerError,
@@ -49,6 +49,7 @@ func TestGetMessagesHandler(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			getMessagesServiceFunc = tc.mockFunc
 
+			// messageHandler := NewMessageHandler(&mockService{})
 			messageHandler := NewMessageHandler()
 			messageHandler.service = &mockMessageService{}
 			rr := httptest.NewRecorder()
@@ -74,5 +75,4 @@ func TestGetMessagesHandler(t *testing.T) {
 			// log.Println("test response: ", rc.Body.String())
 		})
 	}
-
 }

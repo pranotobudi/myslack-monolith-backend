@@ -78,7 +78,7 @@ func TestGetRooms(t *testing.T) {
 				assert.Errorf(t, err, "response format is not valid")
 			}
 			assert.EqualValues(t, tc.CodeWant, response.Meta.Code)
-
+			// log.Println("test response: ", rc.Body.String())
 		})
 	}
 }
