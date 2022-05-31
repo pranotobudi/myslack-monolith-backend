@@ -41,7 +41,6 @@ func (s *userService) UserAuth(userAuth mongodb.UserAuth) (*mongodb.User, error)
 		log.Println("inside room_io_handler-UserAuth error: ", err)
 		return nil, err
 	}
-	log.Println("UserService - userPtr: ", *userPtr)
 
 	if userPtr != nil {
 		// two possibility:
@@ -49,6 +48,7 @@ func (s *userService) UserAuth(userAuth mongodb.UserAuth) (*mongodb.User, error)
 		// non-empty User, means: user found and success to decode
 		// for both result we'll return it anyway
 
+		log.Println("UserService - userPtr: ", *userPtr)
 		log.Println("UserService - userPtr is not nil")
 		return userPtr, nil
 	}

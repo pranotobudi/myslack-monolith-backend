@@ -488,7 +488,8 @@ func (m *MongoDB) GetUser(filter interface{}) (*User, error) {
 	result := coll.FindOne(context.TODO(), filter)
 	if result.Err() != nil {
 		log.Println("inside GetUser, user not found: ", result.Err())
-		return nil, result.Err()
+		// return nil, result.Err()
+		return nil, nil
 	}
 	var userMongo bson.M
 	err := result.Decode(&userMongo)
@@ -515,7 +516,7 @@ func (m *MongoDB) GetUser(filter interface{}) (*User, error) {
 
 // AddUser will add user to the mongoDB
 func (m *MongoDB) AddUser(user interface{}) (string, error) {
-
+	log.Println("Inside AddUser-------: ", user)
 	coll := m.getCollection("users")
 	// doc := bson.D{{"name", roomName}}
 	result, err := coll.InsertOne(context.TODO(), user)
